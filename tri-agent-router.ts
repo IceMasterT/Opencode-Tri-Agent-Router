@@ -392,7 +392,8 @@ function approvalPrompt(selection: Selection): string {
     "The tri-agent router selected the following agents and skills for this request:",
     selection.summary,
     "",
-    "Before doing the work, inform the user of this selection and ask them to choose exactly one option:",
+    "Before doing the work, inform the user of this selection and present a selectable menu using the question tool so they can choose without typing.",
+    "Ask them to choose exactly one option using these exact labels:",
     "[approve] - approve this selection for the current request only, until the next prompt.",
     "[deny] - deny this selection and ask whether the user wants to manually enter agents/skills or draft a new selection.",
     "[always] - Will 'Always' accept this session.",
@@ -571,6 +572,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
         "Primary owns execution, secondary provides complementary specialization, tertiary performs verification/risk review.",
         "After selecting agents, apply all installed skills that pertain to the request. Read and follow each matching SKILL.md before execution.",
+        "When approval is required, present it as a selectable question-tool menu instead of requiring typed input.",
         "If the router asks for approval, wait for one of: approve, deny, always, global autonomous approval granted, add/remove, cancel, never.",
       ].join("\n"))
     },
