@@ -18,7 +18,9 @@ For additional skill packs, it pairs nicely with either:
 - [opencode-agent-skills](https://github.com/joshuadavidthomas/opencode-agent-skills)
 - [openskills](https://github.com/numman-ali/openskills)
 
-If you like running OpenCode with a strong orchestrator model, this plugin fits that pattern well: the main model acts like an orchestrator, and the routed agents behave like skilled workers that cooperate on the same job until it is done.
+If you like running OpenCode with a strong orchestrator model, this plugin fits that pattern well: **Trondo** acts as the orchestrator/reasoner, and the routed agents behave like skilled workers that cooperate on the same job until it is done.
+
+Trondo is the reasoning orchestrator that the tri-agent-router is designed to work with. When global autonomous approval is granted, Trondo selects agents and skills automatically across all sessions.
 
 ## What It Does
 
@@ -182,7 +184,9 @@ The plugin supports these approval choices:
 - `cancel`
 - `never`
 
-The plugin now explicitly tells the assistant to present these as a selectable menu using the question tool when approval is required.
+The plugin now explicitly tells the assistant to present these as a selectable menu using the question tool when approval is required. In runtimes that support the question tool, this gives an arrow-key menu with Enter-to-select behavior instead of typed choices.
+
+`global autonomous approval granted` is persistent. Once selected, the plugin writes `~/.config/opencode/tri-agent-router-state.json` and will keep selecting agents and skills across future sessions without asking again.
 
 ## Updating
 

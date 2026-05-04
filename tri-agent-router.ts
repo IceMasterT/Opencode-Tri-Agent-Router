@@ -1,5 +1,5 @@
 import type { Part, Plugin } from "@opencode-ai/plugin"
-import { readdir, readFile } from "node:fs/promises"
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { basename, join, resolve } from "node:path"
 import { homedir } from "node:os"
 
@@ -31,6 +31,10 @@ type SessionState = {
 }
 
 type ApprovalDecision = "approve" | "deny" | "always" | "autonomous approve" | "add/remove" | "cancel" | "never"
+
+type PersistentRouterState = {
+  globalAutonomousApproval?: boolean
+}
 
 type RouterOptions = {
   agentDirs?: string[]
@@ -65,6 +69,40 @@ const GENERAL_VERIFIERS = [
   "compliance-auditor",
   "security-engineer",
 ]
+
+const APPROVAL_OPTIONS = [
+  {
+    label: "approve",
+    description: "Approve this selection for the current request only, until the next prompt.",
+  },
+  {
+    label: "deny",
+    description: "Deny this selection and ask whether to manually enter agents/skills or draft a new selection.",
+  },
+  {
+    label: "always",
+    description: "Will 'Always' accept this session.",
+  },
+  {
+    label: "global autonomous approval granted",
+    description: "Global Antonomous Approval Granted, will Autonomously Accept the Selection in all Sessions from now on without prompting for approval.",
+  },
+  {
+    label: "add/remove",
+    description: "Add or remove agents/skills, then present a revised selection for approval.",
+  },
+  {
+    label: "cancel",
+    description: "Cancel agents and skills for this request and continue without them.",
+  },
+  {
+    label: "never",
+    description: "Disable tri-agent routing for the rest of this session and continue without agents/skills.",
+  },
+]
+
+const PERSISTENCE_DIR = join(homedir(), ".config", "opencode")
+const PERSISTENCE_PATH = join(PERSISTENCE_DIR, "tri-agent-router-state.json")
 
 const DOMAIN_HINTS: Record<string, string[]> = {
   frontend: ["ui", "ux", "css", "react", "vue", "angular", "svelte", "frontend", "browser", "web page", "component", "layout", "animation"],
@@ -239,6 +277,24 @@ async function loadSkills(skillDirs: string[]): Promise<SkillCard[]> {
   return [...skillsById.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
+async function loadPersistentState(): Promise<PersistentRouterState> {
+  try {
+    return JSON.parse(await readFile(PERSISTENCE_PATH, "utf8")) as PersistentRouterState
+  } catch {
+    return {}
+  }
+}
+
+async function savePersistentState(state: PersistentRouterState): Promise<void> {
+  await mkdir(PERSISTENCE_DIR, { recursive: true })
+  await writeFile(PERSISTENCE_PATH, `${JSON.stringify(state, null, 2)}
+`, "utf8")
+}
+
+function approvalOptionLines(): string[] {
+  return APPROVAL_OPTIONS.map((option) => `[${option.label}] - ${option.description}`)
+}
+
 function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -392,15 +448,11 @@ function approvalPrompt(selection: Selection): string {
     "The tri-agent router selected the following agents and skills for this request:",
     selection.summary,
     "",
-    "Before doing the work, inform the user of this selection and present a selectable menu using the question tool so they can choose without typing.",
-    "Ask them to choose exactly one option using these exact labels:",
-    "[approve] - approve this selection for the current request only, until the next prompt.",
-    "[deny] - deny this selection and ask whether the user wants to manually enter agents/skills or draft a new selection.",
-    "[always] - Will 'Always' accept this session.",
-    "[global autonomous approval granted] - Global Antonomous Approval Granted, will Autonomously Accept the Selection in all Sessions from now on without prompting for approval.",
-    "[add/remove] - let the user add or remove agents/skills, then present a revised selection for approval.",
-    "[cancel] - cancel agents and skills for this request and continue the work without them.",
-    "[never] - disable tri-agent routing for the rest of this session and continue without agents/skills.",
+    "MUST USE A SELECTABLE MENU: call the question tool with single-select options so the user can move with arrow keys and press Enter. Do not ask the user to type the choice unless the question tool is unavailable.",
+    "Question header: Tri-agent approval",
+    "Question text: Choose exactly one approval action for the selected agents and skills.",
+    "Use these exact option labels and descriptions:",
+    ...approvalOptionLines(),
     "",
     "Do not execute the original request until the user chooses an option. The original request is held by the router for the next reply.",
     "</tri-agent-approval-required>",
@@ -469,9 +521,10 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
   const announceNoSkills = options?.announceNoSkills ?? false
   const requireApproval = options?.requireApproval ?? true
 
+  const persistentState = await loadPersistentState()
   let cachedAgents: AgentCard[] | undefined
   let cachedSkills: SkillCard[] | undefined
-  let globalAutonomousApproval = false
+  let globalAutonomousApproval = persistentState.globalAutonomousApproval === true
   const sessionStates = new Map<string, SessionState>()
 
   function stateFor(sessionID: string): SessionState {
@@ -506,6 +559,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
           } else {
             state.mode = "autonomous"
             globalAutonomousApproval = true
+            await savePersistentState({ ...persistentState, globalAutonomousApproval: true })
           }
           state.pending = undefined
           textPart.text = `${approvalAppliedPrefix(decision)}${pending.routedText}`
@@ -568,7 +622,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
 
     async "experimental.chat.system.transform"(_input, output) {
       output.system.push([
-        "Tri-agent router is active.",
+        "Tri-agent router is active. Trondo is the orchestrator/reasoner that drives this plugin.",
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
         "Primary owns execution, secondary provides complementary specialization, tertiary performs verification/risk review.",
         "After selecting agents, apply all installed skills that pertain to the request. Read and follow each matching SKILL.md before execution.",
