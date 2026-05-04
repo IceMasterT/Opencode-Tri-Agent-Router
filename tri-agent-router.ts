@@ -606,8 +606,11 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
         "Primary owns execution, secondary provides complementary specialization, tertiary performs verification/risk review.",
         "After selecting agents, apply all installed skills that pertain to the request. Read and follow each matching SKILL.md before execution.",
-        "When approval is required, use selectable menu (arrow keys + Enter).",
-        "Options: Yes, Always, Change agents.",
+        "When approval is required, present it as a selectable question-tool menu instead of requiring typed input.",
+        "If the router asks for approval, wait for one of: approve, deny, always, global autonomous approval granted, add/remove, cancel, never.",
+        "",
+        "TRONDO BOTTOM BAR:",
+        "  [Build]  [Plan]  Working dir: " + (directory || "unknown"),
       ].join("\n"))
     },
   }
