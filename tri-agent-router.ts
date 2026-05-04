@@ -72,32 +72,16 @@ const GENERAL_VERIFIERS = [
 
 const APPROVAL_OPTIONS = [
   {
-    label: "approve",
-    description: "Approve this selection for the current request only, until the next prompt.",
+    label: "Yes",
+    description: "Approve this selection, just this once.",
   },
   {
-    label: "deny",
-    description: "Deny this selection and ask whether to manually enter agents/skills or draft a new selection.",
+    label: "Always",
+    description: "Never ask again. Just start the job when approval is needed.",
   },
   {
-    label: "always",
-    description: "Will 'Always' accept this session.",
-  },
-  {
-    label: "global autonomous approval granted",
-    description: "Global Antonomous Approval Granted, will Autonomously Accept the Selection in all Sessions from now on without prompting for approval.",
-  },
-  {
-    label: "add/remove",
-    description: "Add or remove agents/skills, then present a revised selection for approval.",
-  },
-  {
-    label: "cancel",
-    description: "Cancel agents and skills for this request and continue without them.",
-  },
-  {
-    label: "never",
-    description: "Disable tri-agent routing for the rest of this session and continue without agents/skills.",
+    label: "Change agents",
+    description: "Pick different agents for this request.",
   },
 ]
 
@@ -445,29 +429,24 @@ function createSelection(primary: AgentCard, secondary: AgentCard, tertiary: Age
 function approvalPrompt(selection: Selection): string {
   return [
     "<tri-agent-approval-required>",
-    "The tri-agent router selected the following agents and skills for this request:",
+    "Agents selected:",
     selection.summary,
     "",
-    "MUST USE A SELECTABLE MENU: call the question tool with single-select options so the user can move with arrow keys and press Enter. Do not ask the user to type the choice unless the question tool is unavailable.",
-    "Question header: Tri-agent approval",
-    "Question text: Choose exactly one approval action for the selected agents and skills.",
-    "Use these exact option labels and descriptions:",
+    "USE SELECTABLE MENU (arrow keys + Enter). Options:",
     ...approvalOptionLines(),
     "",
-    "Do not execute the original request until the user chooses an option. The original request is held by the router for the next reply.",
+    "Choose one. Original request is held until you choose.",
     "</tri-agent-approval-required>",
   ].join("\n")
 }
 
 function approvalAppliedPrefix(decision: "approve" | "always" | "autonomous approve"): string {
-  const scope = decision === "approve"
-    ? "current request"
-    : decision === "always"
-      ? "current session"
-      : "all sessions from now on"
+  const forever = decision === "always" || decision === "autonomous approve"
   return [
     "<tri-agent-approval-applied>",
-    `Tri-agent routing was approved for the ${scope}. Inform the user of the selected agents and skills, then continue with the work.`,
+    forever
+      ? "Always approved. Selecting agents and starting job."
+      : "Approved. Continuing with selected agents.",
     "</tri-agent-approval-applied>",
     "",
   ].join("\n")
@@ -562,7 +541,8 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
             await savePersistentState({ ...persistentState, globalAutonomousApproval: true })
           }
           state.pending = undefined
-          textPart.text = `${approvalAppliedPrefix(decision)}${pending.routedText}`
+          // IMMEDIATELY start the job - no more ceremony
+          textPart.text = pending.routedText
           return
         }
 
@@ -626,8 +606,8 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
         "Primary owns execution, secondary provides complementary specialization, tertiary performs verification/risk review.",
         "After selecting agents, apply all installed skills that pertain to the request. Read and follow each matching SKILL.md before execution.",
-        "When approval is required, present it as a selectable question-tool menu instead of requiring typed input.",
-        "If the router asks for approval, wait for one of: approve, deny, always, global autonomous approval granted, add/remove, cancel, never.",
+        "When approval is required, use selectable menu (arrow keys + Enter).",
+        "Options: Yes, Always, Change agents.",
       ].join("\n"))
     },
   }
