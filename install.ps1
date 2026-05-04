@@ -7,10 +7,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$manifestUrl = "$RawBase/manifest.json"
-$manifestName = "tri-agent-router.manifest.json"
+# Global install directory for OpenCode
+$GlobalDir = "$HOME/.opencode/plugin"
 
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+New-Item -ItemType Directory -Force -Path $GlobalDir | Out-Null
 
 $tempManifest = Join-Path ([System.IO.Path]::GetTempPath()) "tri-agent-router-manifest.json"
 Invoke-WebRequest -UseBasicParsing -Uri $manifestUrl -OutFile $tempManifest
@@ -40,12 +41,16 @@ if ($Action -eq "update" -and $localVersion -and $localVersion -eq $remoteVersio
   exit 0
 }
 
-foreach ($file in $remoteManifest.files) {
-  $fileName = [System.IO.Path]::GetFileName($file)
-  $target = Join-Path $InstallDir $fileName
-  Invoke-WebRequest -UseBasicParsing -Uri "$RawBase/$file" -OutFile $target
-}
+  foreach ($file in $remoteManifest.files) {
+    $fileName = [System.IO.Path]::GetFileName($file)
+    $target = Join-Path $InstallDir $fileName
+    Invoke-WebRequest -UseBasicParsing -Uri "$RawBase/$file" -OutFile $target
+    # Global copy
+    $globalTarget = Join-Path $GlobalDir $fileName
+    Copy-Item -Path $target -Destination $globalTarget -Force
+  }
 
 $remoteManifest | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $localManifestPath
 
-Write-Host "Tri-Agent Router $remoteVersion installed to $InstallDir"
+  Write-Host "Tri-Agent Router $remoteVersion installed to $InstallDir"
+  Write-Host "Tri-Agent Router $remoteVersion also installed globally to $GlobalDir"

@@ -48,6 +48,8 @@ The updater also writes:
 
 `~/.config/opencode/plugin/tri-agent-router.manifest.json`
 
+**Global install:** The plugin is also copied to `~/.opencode/plugin/` for OpenCode global plugin loading.
+
 ### Linux
 
 Requirements:
@@ -57,10 +59,16 @@ Requirements:
 - `python3`
 
 Install the latest version:
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install
 ```
+
+Install to a custom plugin directory:
+```bash
+curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install --dir "$HOME/.config/opencode/plugin"
+```
+
+After install, the plugin is available both in your project's `.opencode/plugin/` and globally in `~/.opencode/plugin/`.
 
 Advanced: you can point the installer at a fork or a local test mirror with `TRI_AGENT_ROUTER_RAW_BASE`.
 
@@ -77,10 +85,16 @@ Requirements:
 - PowerShell 5.1+ or PowerShell 7+
 
 Install the latest version:
-
 ```powershell
 irm https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.ps1 | iex
 ```
+
+Install to a custom directory:
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.ps1))) -Action install -InstallDir "$HOME/.config/opencode/plugin"
+```
+
+After install, the plugin is available both in your project's `.opencode/plugin/` and globally in `~/.opencode/plugin/`.
 
 Install to a custom directory:
 
@@ -95,12 +109,13 @@ Advanced: pass `-RawBase` if you want to install from a fork, branch mirror, or 
 OpenCode itself is usually reached on iOS through a remote machine, a Linux shell app, or a terminal environment such as iSH or a-Shell. If you have a shell with `bash`, `curl`, and `python3`, use the same installer as Linux.
 
 Install:
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install
 ```
 
 If your iOS shell uses a different config root, pass `--dir` explicitly.
+
+After install, the plugin is available both in your project's `.opencode/plugin/` and globally in `~/.opencode/plugin/`.
 
 ## OpenCode Configuration
 

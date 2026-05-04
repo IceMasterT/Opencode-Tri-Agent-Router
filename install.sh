@@ -4,6 +4,8 @@ set -euo pipefail
 REPO="${TRI_AGENT_ROUTER_REPO:-IceMasterT/Opencode-Tri-Agent-Router}"
 RAW_BASE="${TRI_AGENT_ROUTER_RAW_BASE:-https://raw.githubusercontent.com/${REPO}/main}"
 INSTALL_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/plugin"
+# Global install: also copy to OpenCode global plugin directory
+GLOBAL_DIR="$HOME/.opencode/plugin"
 MANIFEST_NAME="tri-agent-router.manifest.json"
 
 usage() {
@@ -86,9 +88,10 @@ if [ "$ACTION" = "update" ] && [ "$local_version" = "$remote_version" ] && [ -n 
   exit 0
 fi
 
-mkdir -p "$INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
+  mkdir -p "$GLOBAL_DIR" 2>/dev/null || true
 
-python3 - <<'PY' "$REMOTE_MANIFEST" "$RAW_BASE" "$INSTALL_DIR"
+python3 - <<'PY' "$REMOTE_MANIFEST" "$RAW_BASE" "$INSTALL_DIR" "$GLOBAL_DIR"
 import json
 import pathlib
 import sys
@@ -111,3 +114,4 @@ for relative in manifest['files']:
 PY
 
 printf 'Tri-Agent Router %s installed to %s\n' "$remote_version" "$INSTALL_DIR"
+printf 'Tri-Agent Router %s also installed globally to %s\n' "$remote_version" "$GLOBAL_DIR"
