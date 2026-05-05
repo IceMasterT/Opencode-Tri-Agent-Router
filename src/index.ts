@@ -555,12 +555,14 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
       textPart.text = approvalPrompt(selection)
     },
 
-    async "experimental.chat.system.transform"(_input, output) {
+async "experimental.chat.system.transform"(input, output) {
+      const cwd = input.directory ?? "unknown"
       output.system.push([
         "Tri-agent router is active.",
+        `Current working directory: ${cwd}`,
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
         "Primary owns execution, secondary provides complementary specialization, tertiary performs verification/risk review.",
-        "After selecting agents, apply all installed skills that pertain to the request. Read and follow each matching SKILL.md before execution.",
+        "After selecting agents, apply all installed skills that pertain to this request. Read each listed SKILL.md and follow its workflow when its conditions match the user request. Do not apply unrelated skills.",
         "If the router asks for approval, wait for one of: approve, deny, always, autonomous approve, add/remove, cancel, never.",
       ].join("\n"))
     },
