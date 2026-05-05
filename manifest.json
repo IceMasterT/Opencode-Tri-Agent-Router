@@ -1,0 +1,13 @@
+{
+  "name": "Opencode Tri-Agent Router",
+  "version": "2026.05.05.1",
+  "files": [
+    "tri-agent-router.ts",
+    "agent-trondo/AgentTrondo.md",
+    "agent-trondo/core.ts",
+    "agent-trondo/AgentTrondoWorkbench.ts",
+    "agent-trondo/storage.ts"
+  ],
+  "installDir": ".config/opencode/plugin",
+  "homepage": "https://github.com/IceMasterT/Opencode-Tri-Agent-Router"
+}

@@ -1,0 +1,42 @@
+{
+  "name": "opencode-tri-agent-router",
+  "version": "0.1.0",
+  "description": "OpenCode plugin that routes every prompt through primary, secondary, and tertiary agents, then applies matching skills.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "agent-trondo",
+    "scripts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --target=node --format=esm --outfile=dist/index.js && cp src/index.d.ts dist/index.d.ts",
+    "check": "node --check dist/index.js",
+    "prepack": "npm run build",
+    "uninstall": "node scripts/uninstall.js"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "agents",
+    "skills",
+    "routing",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.14.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": ">=1.14.0"
+  }
+}
