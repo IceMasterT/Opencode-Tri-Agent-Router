@@ -13,7 +13,8 @@
           "/home/artiq/opencode_tools/agent/data",
           "/home/artiq/opencode_tools/agent/meta",
           "/home/artiq/opencode_tools/agent/subagents",
-          "/home/artiq/.config/opencode/plugin"
+          "/home/artiq/.config/opencode/plugin",
+          "/home/artiq/.config/opencode/agent-trondo"
         ],
         "skillDirs": [
           "/home/artiq/opencode_tools/open-skills/skills"
