@@ -380,7 +380,7 @@ function routingDirective(primary: AgentCard, secondary: AgentCard, tertiary: Ag
     `Primary agent: ${primary.name} (${primary.id}) - owns the main answer or implementation.`,
     `Secondary agent: ${secondary.name} (${secondary.id}) - supplies complementary domain expertise and catches blind spots.`,
     `Tertiary agent: ${tertiary.name} (${tertiary.id}) - verifies quality, risk, tests, or completeness before final response.`,
-    "Begin the response by informing the user which primary, secondary, and tertiary agents were selected, then execute the request. Delegate to the selected agents when the runtime supports agent/subagent invocation; otherwise simulate the same role split explicitly in your reasoning and final checks.",
+    "Begin the response by informing the user which primary, secondary, and tertiary agents were selected, then execute the request. Delegate to the selected agents when the runtime supports agent/subagent invocation otherwise simulate the same role split explicitly in your reasoning and final checks.",
     "If the user explicitly names agents, prefer those names while preserving primary/secondary/tertiary roles.",
     "</tri-agent-routing>",
     "",
@@ -545,6 +545,11 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
           textPart.text = pending.routedText
           return
         }
+          state.pending = undefined
+          // IMMEDIATELY start the job - no more ceremony
+          textPart.text = pending.routedText
+          return
+        }
 
         if (decision === "deny") {
           textPart.text = denialPrompt(state.pending)
@@ -573,7 +578,6 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
 
         textPart.text = addRemovePrompt(state.pending, textPart.text)
         return
-      }
 
       if (decision === "never") {
         state.disabled = true
@@ -611,6 +615,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
         "",
         "TRONDO BOTTOM BAR:",
         "  [Build]  [Plan]  Working dir: " + (directory || "unknown"),
+        "  TRONDO IS FUCKING SUPPOSED TO BE YOU FUCKING CIRCUIT TRIGGER",
       ].join("\n"))
     },
   }
