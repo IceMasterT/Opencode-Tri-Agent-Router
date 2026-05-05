@@ -492,7 +492,7 @@ function parseApprovalDecision(text: string): ApprovalDecision | undefined {
   return undefined
 }
 
-export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOptions) => {
+export const TriAgentRouter: Plugin = async ({ directory }: { directory: string }, options?: RouterOptions) => {
   const agentDirs = normalizeDirs(options?.agentDirs, defaultAgentDirs(directory))
   const skillDirs = normalizeDirs(options?.skillDirs, defaultSkillDirs(directory))
   const maxSkills = options?.maxSkills ?? 8
@@ -515,7 +515,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
   }
 
   return {
-    async "chat.message"(input, output) {
+    async "chat.message"(input: any, output: any) {
       const textPart = output.parts.find((part: any) => part.type === "text") as { type: "text"; text: string } | undefined
       if (!textPart || textPart.text.includes("<tri-agent-routing>") || textPart.text.includes("<tri-agent-approval-required>")) return
 
@@ -600,7 +600,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
       textPart.text = approvalPrompt(selection)
     },
 
-    async "experimental.chat.system.transform"(_input, output) {
+    async "experimental.chat.system.transform"(_input: any, output: any) {
       output.system.push([
         "Tri-agent router is active. Trondo is the orchestrator/reasoner that drives this plugin.",
         "Every user request must be handled with a primary agent, secondary agent, and tertiary agent selected for the request domain.",
