@@ -58,12 +58,12 @@ Requirements:
 - `curl`
 - `python3`
 
-Install the latest version:
+Install the latest version locally:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install
 ```
 
-Install to a custom plugin directory:
+Install to a global custom plugin directory:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install --dir "$HOME/.config/opencode/plugin"
 ```
@@ -72,11 +72,6 @@ After install, the plugin is available both in your project's `.opencode/plugin/
 
 Advanced: you can point the installer at a fork or a local test mirror with `TRI_AGENT_ROUTER_RAW_BASE`.
 
-Install to a custom plugin directory:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install --dir "$HOME/.config/opencode/plugin"
-```
 
 ### Windows
 
@@ -84,12 +79,12 @@ Requirements:
 
 - PowerShell 5.1+ or PowerShell 7+
 
-Install the latest version:
+Install the latest version locally:
 ```powershell
 irm https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.ps1 | iex
 ```
 
-Install to a custom directory:
+Install to a global custom directory:
 ```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.ps1))) -Action install -InstallDir "$HOME/.config/opencode/plugin"
 ```
@@ -108,7 +103,7 @@ Advanced: pass `-RawBase` if you want to install from a fork, branch mirror, or 
 
 OpenCode itself is usually reached on iOS through a remote machine, a Linux shell app, or a terminal environment such as iSH or a-Shell. If you have a shell with `bash`, `curl`, and `python3`, use the same installer as Linux.
 
-Install:
+Install locally:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/IceMasterT/Opencode-Tri-Agent-Router/main/install.sh | bash -s -- install
 ```
