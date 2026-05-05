@@ -1,4 +1,4 @@
-import type { Part, Plugin } from "@opencode-ai/plugin"
+import type { Plugin } from "@opencode-ai/plugin"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { basename, join, resolve } from "node:path"
 import { homedir } from "node:os"
@@ -172,12 +172,12 @@ function normalizeDirs(dirs: string[] | undefined, defaults: string[]): string[]
     .map((dir) => dir.replace(/^~(?=$|\/)/, homedir()))
     .map((dir) => resolve(dir))
 
-  return [...new Set(expanded)]
+  return Array.from(new Set(expanded))
 }
 
 async function walkMarkdownFiles(dir: string): Promise<string[]> {
   const files: string[] = []
-  let entries: Awaited<ReturnType<typeof readdir>>
+  let entries: any[]
 
   try {
     entries = await readdir(dir, { withFileTypes: true })
@@ -200,7 +200,7 @@ async function walkMarkdownFiles(dir: string): Promise<string[]> {
 
 async function walkSkillFiles(dir: string): Promise<string[]> {
   const files: string[] = []
-  let entries: Awaited<ReturnType<typeof readdir>>
+  let entries: any[]
 
   try {
     entries = await readdir(dir, { withFileTypes: true })
@@ -242,7 +242,7 @@ async function loadAgents(agentDirs: string[]): Promise<AgentCard[]> {
     })
   }))
 
-  return [...agentsByPath.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return Array.from(agentsByPath.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function loadSkills(skillDirs: string[]): Promise<SkillCard[]> {
@@ -258,7 +258,7 @@ async function loadSkills(skillDirs: string[]): Promise<SkillCard[]> {
     if (!skillsById.has(id)) skillsById.set(id, { id, name, description, path })
   }))
 
-  return [...skillsById.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return Array.from(skillsById.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function loadPersistentState(): Promise<PersistentRouterState> {
@@ -516,7 +516,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
 
   return {
     async "chat.message"(input, output) {
-      const textPart = output.parts.find((part): part is Part & { type: "text"; text: string } => part.type === "text")
+      const textPart = output.parts.find((part: any) => part.type === "text") as { type: "text"; text: string } | undefined
       if (!textPart || textPart.text.includes("<tri-agent-routing>") || textPart.text.includes("<tri-agent-approval-required>")) return
 
       const sessionID = input.sessionID ?? "global"
@@ -540,11 +540,6 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
             globalAutonomousApproval = true
             await savePersistentState({ ...persistentState, globalAutonomousApproval: true })
           }
-          state.pending = undefined
-          // IMMEDIATELY start the job - no more ceremony
-          textPart.text = pending.routedText
-          return
-        }
           state.pending = undefined
           // IMMEDIATELY start the job - no more ceremony
           textPart.text = pending.routedText
@@ -578,6 +573,7 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
 
         textPart.text = addRemovePrompt(state.pending, textPart.text)
         return
+      }
 
       if (decision === "never") {
         state.disabled = true
