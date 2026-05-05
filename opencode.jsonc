@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-supermemory@latest",
+    "oh-my-openagent@latest",
+    [
+      "/home/artiq/.config/opencode/plugin/tri-agent-router.ts",
+      {
+        "agentDirs": [
+          "/home/artiq/opencode_tools/agent/agents/.opencode/agents",
+          "/home/artiq/opencode_tools/agent/core",
+          "/home/artiq/opencode_tools/agent/content",
+          "/home/artiq/opencode_tools/agent/data",
+          "/home/artiq/opencode_tools/agent/meta",
+          "/home/artiq/opencode_tools/agent/subagents",
+          "/home/artiq/.config/opencode/plugin"
+        ],
+        "skillDirs": [
+          "/home/artiq/opencode_tools/open-skills/skills"
+        ],
+        "maxSkills": 8,
+        "minSkillScore": 16,
+        "requireApproval": true
+      }
+    ]
+  ]
+}
