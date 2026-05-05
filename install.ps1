@@ -7,6 +7,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Install manifest
+$ManifestUrl = "$RawBase/manifest.json"
+$ManifestName = "tri-agent-router.manifest.json"
+
 # Global install directory for OpenCode
 $GlobalDir = "$HOME/.opencode/plugin"
 
@@ -14,12 +18,12 @@ New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 New-Item -ItemType Directory -Force -Path $GlobalDir | Out-Null
 
 $tempManifest = Join-Path ([System.IO.Path]::GetTempPath()) "tri-agent-router-manifest.json"
-Invoke-WebRequest -UseBasicParsing -Uri $manifestUrl -OutFile $tempManifest
+Invoke-WebRequest -UseBasicParsing -Uri $ManifestUrl -OutFile $tempManifest
 
 $remoteManifest = Get-Content $tempManifest -Raw | ConvertFrom-Json
 $remoteVersion = $remoteManifest.version
 
-$localManifestPath = Join-Path $InstallDir $manifestName
+$localManifestPath = Join-Path $InstallDir $ManifestName
 $localVersion = $null
 if (Test-Path $localManifestPath) {
   $localVersion = (Get-Content $localManifestPath -Raw | ConvertFrom-Json).version
