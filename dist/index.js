@@ -432,6 +432,14 @@ var TriAgentRouter = async ({ directory }, options) => {
       const textPart = output.parts.find((part) => part.type === "text");
       if (!textPart || textPart.text.includes("<tri-agent-routing>") || textPart.text.includes("<tri-agent-approval-required>"))
         return;
+      const cwd = input.directory ?? "unknown";
+      const cwdIndicator = `
+\uD83D\uDCC1 **Working Directory:** \`${cwd}\`
+---
+`;
+      if (!textPart.text.startsWith(cwdIndicator.trim())) {
+        textPart.text = cwdIndicator + textPart.text;
+      }
       const sessionID = input.sessionID ?? "global";
       const state = stateFor(sessionID);
       const decision = parseApprovalDecision(textPart.text);

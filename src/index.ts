@@ -481,6 +481,13 @@ export const TriAgentRouter: Plugin = async ({ directory }, options?: RouterOpti
       const textPart = output.parts.find((part): part is Part & { type: "text"; text: string } => part.type === "text")
       if (!textPart || textPart.text.includes("<tri-agent-routing>") || textPart.text.includes("<tri-agent-approval-required>")) return
 
+      // Add working directory indicator to output
+      const cwd = input.directory ?? "unknown"
+      const cwdIndicator = `\n📁 **Working Directory:** \`${cwd}\`\n---\n`
+      if (!textPart.text.startsWith(cwdIndicator.trim())) {
+        textPart.text = cwdIndicator + textPart.text
+      }
+
       const sessionID = input.sessionID ?? "global"
       const state = stateFor(sessionID)
       const decision = parseApprovalDecision(textPart.text)
