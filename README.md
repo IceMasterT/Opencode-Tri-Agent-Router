@@ -24,6 +24,13 @@ AgentTrondo is an autonomous orchestrator that leverages Trondo's reasoning meth
 
 ## Installation
 
+Installer behavior:
+- Installs `tri-agent-router.ts` plugin assets
+- Installs `agent-trondo/*` assets and `skills/*` bundle from manifest
+- Copies AgentTrondo into picker paths:
+  - `~/.config/opencode/agent/core/agenttrondo.md`
+  - `~/.config/opencode/.opencode/agents/agent-trondo.md`
+
 ### Install (Local)
 
 Install to your project's `.opencode/plugin/` directory:

@@ -60,6 +60,11 @@ do_uninstall() {
     rm -f "$dir/tri-agent-router.ts" 2>/dev/null || true
     rm -f "$dir/tri-agent-router.manifest.json" 2>/dev/null || true
     rm -rf "$dir/agent-trondo" 2>/dev/null || true
+    rm -rf "$dir/skills" 2>/dev/null || true
+    rm -f "$HOME/.config/opencode/agent/core/agenttrondo.md" 2>/dev/null || true
+    rm -f "$HOME/.config/opencode/.opencode/agents/agent-trondo.md" 2>/dev/null || true
+    rm -f "$HOME/.opencode/agent/core/agenttrondo.md" 2>/dev/null || true
+    rm -f "$HOME/.opencode/.opencode/agents/agent-trondo.md" 2>/dev/null || true
     printf 'Tri-Agent Router uninstalled from %s\n' "$dir"
   fi
 }
@@ -119,6 +124,7 @@ fi
 python3 - <<'PY' "$REMOTE_MANIFEST" "$RAW_BASE" "$INSTALL_DIR" "$GLOBAL_DIR" "$INSTALL_GLOBAL"
 import json
 import pathlib
+import shutil
 import sys
 import urllib.request
 
@@ -126,13 +132,18 @@ manifest_path = pathlib.Path(sys.argv[1])
 raw_base = sys.argv[2]
 install_dir = pathlib.Path(sys.argv[3])
 global_dir = pathlib.Path(sys.argv[4])
-install_global = sys.argv[4].lower() == 'true'
+install_global = sys.argv[5].lower() == 'true'
 
 manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
 
+home = pathlib.Path.home()
+primary_agent_target = home / '.config' / 'opencode' / 'agent' / 'core' / 'agenttrondo.md'
+subagent_target = home / '.config' / 'opencode' / '.opencode' / 'agents' / 'agent-trondo.md'
+
 # Install to local directory
 for relative in manifest['files']:
-    target = install_dir / pathlib.Path(relative).name
+    target = install_dir / pathlib.Path(relative)
+    target.parent.mkdir(parents=True, exist_ok=True)
     with urllib.request.urlopen(f"{raw_base}/{relative}") as response:
         target.write_bytes(response.read())
 
@@ -141,10 +152,17 @@ for relative in manifest['files']:
     encoding='utf-8',
 )
 
+# Install AgentTrondo into agent picker locations
+primary_agent_target.parent.mkdir(parents=True, exist_ok=True)
+subagent_target.parent.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(install_dir / 'agent-trondo' / 'AgentTrondo-Orchestration.md', primary_agent_target)
+shutil.copyfile(install_dir / 'agent-trondo' / 'AgentTrondo.md', subagent_target)
+
 # Install to global directory if --global flag is set
 if install_global:
     for relative in manifest['files']:
-        target = global_dir / pathlib.Path(relative).name
+        target = global_dir / pathlib.Path(relative)
+        target.parent.mkdir(parents=True, exist_ok=True)
         with urllib.request.urlopen(f"{raw_base}/{relative}") as response:
             target.write_bytes(response.read())
     
@@ -152,6 +170,13 @@ if install_global:
         json.dumps(manifest, indent=2) + '\n',
         encoding='utf-8',
     )
+
+    global_primary_agent_target = home / '.opencode' / 'agent' / 'core' / 'agenttrondo.md'
+    global_subagent_target = home / '.opencode' / '.opencode' / 'agents' / 'agent-trondo.md'
+    global_primary_agent_target.parent.mkdir(parents=True, exist_ok=True)
+    global_subagent_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(global_dir / 'agent-trondo' / 'AgentTrondo-Orchestration.md', global_primary_agent_target)
+    shutil.copyfile(global_dir / 'agent-trondo' / 'AgentTrondo.md', global_subagent_target)
 PY
 
 printf 'Tri-Agent Router %s installed to %s\n' "$remote_version" "$INSTALL_DIR"
