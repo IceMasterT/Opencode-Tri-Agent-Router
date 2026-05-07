@@ -264,12 +264,20 @@ function scoreText(searchable: string, request: string, tokens: string[]): numbe
   return score
 }
 
+function isOrchestrationMission(request: string): boolean {
+  return /\b(orchestrat(?:e|ion|or)|multi[-\s]?phase|mission|delegate|delegation|quality gate|recovery|workflow|end[-\s]?to[-\s]?end|autonomous execution)\b/.test(request)
+}
+
 function scoreAgent(agent: AgentCard, request: string, tokens: string[]): number {
   const haystack = `${agent.id} ${agent.name} ${agent.description}`.toLowerCase()
+  const normalizedID = agent.id.toLowerCase().replace(/[-_\s]/g, "")
+  const isAgentTrondo = normalizedID === "agenttrondo"
   let score = scoreText(haystack, request, tokens)
 
   if (haystack.includes("orchestrator")) score += 3
   if (haystack.includes("senior") || haystack.includes("architect")) score += 2
+  if (isAgentTrondo && /\bagent\s*trondo\b|\bagenttrondo\b/.test(request)) score += 200
+  if (isAgentTrondo && isOrchestrationMission(request)) score += 90
   return score
 }
 
